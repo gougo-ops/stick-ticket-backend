@@ -70,6 +70,17 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
+# Health check — required by Render / Railway
+@app.get("/")
+def root():
+    return {"status": "ok", "service": "stick-ticket-api"}
+
+
+@app.get("/health")
+def health():
+    return {"status": "healthy"}
+
 # CORS — allow all origins during development
 app.add_middleware(
     CORSMiddleware,

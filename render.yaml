@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: stick-ticket-api
+    env: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: stick-ticket-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRE_HOURS
+        value: "24"
+
+databases:
+  - name: stick-ticket-db
+    plan: free

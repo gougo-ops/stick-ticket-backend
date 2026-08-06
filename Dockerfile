@@ -9,7 +9,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy source code
 COPY . .
 
-# Railway provides PORT env var; default to 8000
+# Render / Railway provide PORT env var; default to 8000 for local dev
 ENV PORT=8000
 
 EXPOSE $PORT
