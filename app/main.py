@@ -93,13 +93,3 @@ app.include_router(orders.router, tags=["Orders"])
 app.include_router(ticket_requests.router, tags=["Ticket Requests"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(chat.router, tags=["Chat"])
-
-# User list endpoint for admin dashboard
-@app.get("/api/admin/users", tags=["Admin"])
-def list_users_api():
-    db = SessionLocal()
-    try:
-        rows = db.execute(select(User).order_by(User.id.asc())).scalars().all()
-        return [{"id": u.id, "username": u.username, "role": u.role, "ticket_balance": u.ticket_balance} for u in rows]
-    finally:
-        db.close()
