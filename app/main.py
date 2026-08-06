@@ -19,7 +19,6 @@ from app.routers import (
     ticket_requests,
     admin,
     chat,
-    user_list,
 )
 
 
@@ -94,4 +93,3 @@ app.include_router(orders.router, tags=["Orders"])
 app.include_router(ticket_requests.router, tags=["Ticket Requests"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(chat.router, tags=["Chat"])
-app.include_router(user_list.router, prefix="/api/admin", tags=["Admin"])
