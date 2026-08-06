@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = "sqlite:///./stick_ticket.db"
+    DATABASE_URL: str = "postgresql+psycopg2://postgres:wjy666888@db.kggyeugjwlmntzxmwfru.supabase.co:6543/postgres"
     JWT_SECRET: str = "change-me-in-production"
     JWT_EXPIRE_HOURS: int = 24
 
