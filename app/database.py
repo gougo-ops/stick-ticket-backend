@@ -7,14 +7,8 @@ from app.config import settings
 connect_args = {}
 if settings.DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
-
-# For PostgreSQL, prefer DATABASE_ARGS env var for flexibility
-# Internal Railway PG doesn't need sslmode
-if settings.DATABASE_URL.startswith("postgresql"):
-    if "railway.internal" in settings.DATABASE_URL:
-        connect_args = {"connect_timeout": 10}
-    else:
-        connect_args = {"sslmode": "require", "connect_timeout": 10}
+elif settings.DATABASE_URL.startswith("postgresql"):
+    connect_args = {"connect_timeout": 10}
 
 engine = create_engine(
     settings.DATABASE_URL,
