@@ -26,7 +26,7 @@ def list_users(
     db: Session = Depends(get_db),
     admin: User = Depends(get_current_admin_user),
 ):
-    """返回所有用户，按ID排序。"""
+    """返回所有用户列表，按ID升序排列。"""
     users = db.execute(
         select(User).order_by(User.id.asc())
     ).scalars().all()
