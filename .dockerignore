@@ -1,0 +1,9 @@
+__pycache__
+*.pyc
+.env
+stick_ticket.db
+test.db
+.git
+tests/
+venv/
+.venv/
