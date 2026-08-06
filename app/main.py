@@ -19,6 +19,7 @@ from app.routers import (
     ticket_requests,
     admin,
     chat,
+    user_list,
 )
 
 
@@ -93,15 +94,4 @@ app.include_router(orders.router, tags=["Orders"])
 app.include_router(ticket_requests.router, tags=["Ticket Requests"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(chat.router, tags=["Chat"])
-
-# ── User list endpoint (admin only) ──
-@app.get("/api/admin/users", tags=["Admin"])
-def admin_list_users():
-    db = SessionLocal()
-    try:
-        users = db.execute(
-            select(User).order_by(User.id.asc())
-        ).scalars().all()
-        return [{"id": u.id, "username": u.username, "role": u.role, "ticket_balance": u.ticket_balance} for u in users]
-    finally:
-        db.close()
+app.include_router(user_list.router, prefix="/api/admin", tags=["Admin"])
