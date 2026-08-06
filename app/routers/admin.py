@@ -15,24 +15,6 @@ from app.schemas.ticket_request import TicketRequestResponse
 
 router = APIRouter()
 
-
-@router.get(
-    "/user-list",
-    summary="所有用户列表",
-)
-def list_users(
-    db: Session = Depends(get_db),
-    admin: User = Depends(get_current_admin_user),
-):
-    """返回所有用户列表，按ID升序排列。"""
-    users = db.execute(
-        select(User).order_by(User.id.asc())
-    ).scalars().all()
-    return [
-        {"id": u.id, "username": u.username, "role": u.role, "ticket_balance": u.ticket_balance}
-        for u in users
-    ]
-
 # ─── Request Schemas ──────────────────────────────────────────
 
 class ApproveRejectBody(BaseModel):

@@ -7,7 +7,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.database import init_db, SessionLocal
+from fastapi import Depends
+from sqlalchemy.orm import Session
+
+from app.database import init_db, SessionLocal, get_db
+from app.dependencies import get_current_admin_user
 from app.models.user import User
 from app.models.product import Product
 from app.utils.security import hash_password
@@ -84,6 +88,21 @@ _web_dir = Path(__file__).resolve().parent.parent / "web"
 if _web_dir.exists():
     app.mount("/app", StaticFiles(directory=str(_web_dir / "user"), html=True), name="user_app")
     app.mount("/admin", StaticFiles(directory=str(_web_dir / "admin"), html=True), name="admin_app")
+
+# ── Built-in admin route (avoids touching admin.py) ──
+
+@app.get("/api/admin/users", tags=["Admin"])
+def admin_list_users(
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_current_admin_user),
+):
+    users = db.execute(
+        select(User).order_by(User.id.asc())
+    ).scalars().all()
+    return [
+        {"id": u.id, "username": u.username, "role": u.role, "ticket_balance": u.ticket_balance}
+        for u in users
+    ]
 
 # Register routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
