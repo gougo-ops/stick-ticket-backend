@@ -33,13 +33,13 @@ async def lifespan(app: FastAPI):
         product_count = db.execute(select(func.count()).select_from(Product)).scalar()
         if product_count == 0:
             # Create admin user
-            admin = User(
+            admin_user = User(
                 username="admin",
                 password_hash=hash_password("admin123"),
                 role="admin",
                 ticket_balance=99999,
             )
-            db.add(admin)
+            db.add(admin_user)
 
             # Create sample products
             sample_products = [
@@ -93,3 +93,8 @@ app.include_router(orders.router, tags=["Orders"])
 app.include_router(ticket_requests.router, tags=["Ticket Requests"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(chat.router, tags=["Chat"])
+
+# Debug: print registered routes
+for route in app.routes:
+    if hasattr(route, 'path'):
+        print(f"  [route] {route.path}")
