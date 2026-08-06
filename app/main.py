@@ -89,21 +89,6 @@ if _web_dir.exists():
     app.mount("/app", StaticFiles(directory=str(_web_dir / "user"), html=True), name="user_app")
     app.mount("/admin", StaticFiles(directory=str(_web_dir / "admin"), html=True), name="admin_app")
 
-# ── Built-in admin route (avoids touching admin.py) ──
-
-@app.get("/api/admin/users", tags=["Admin"])
-def admin_list_users(
-    db: Session = Depends(get_db),
-    admin: User = Depends(get_current_admin_user),
-):
-    users = db.execute(
-        select(User).order_by(User.id.asc())
-    ).scalars().all()
-    return [
-        {"id": u.id, "username": u.username, "role": u.role, "ticket_balance": u.ticket_balance}
-        for u in users
-    ]
-
 # Register routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(user.router, prefix="/api/user", tags=["User"])
@@ -112,3 +97,14 @@ app.include_router(orders.router, tags=["Orders"])
 app.include_router(ticket_requests.router, tags=["Ticket Requests"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(chat.router, tags=["Chat"])
+
+# ── User list endpoint (admin only) ──
+@app.get("/api/admin/users", tags=["Admin"])
+def admin_list_users(
+    db: Session = Depends(get_db),
+    _admin: User = Depends(get_current_admin_user),
+):
+    users = db.execute(
+        select(User).order_by(User.id.asc())
+    ).scalars().all()
+    return [{"id": u.id, "username": u.username, "role": u.role, "ticket_balance": u.ticket_balance} for u in users]
