@@ -17,7 +17,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/users",
+    "/user-list",
     summary="所有用户列表",
 )
 def list_users(

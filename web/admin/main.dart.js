@@ -84675,7 +84675,7 @@ o===$&&A.a()
 n=J
 m=t.j
 s=3
-return A.O(o.B_("/api/admin/users",t.z),$async$vn)
+return A.O(o.B_("/api/admin/user-list",t.z),$async$vn)
 case 3:o=n.iX(m.a(b.a),new A.XY(),t.ui)
 o=A.a4(o,o.$ti.i("aq.E"))
 q=o
