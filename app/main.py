@@ -7,11 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from fastapi import Depends
-from sqlalchemy.orm import Session
-
-from app.database import init_db, SessionLocal, get_db
-from app.dependencies import get_current_admin_user
+from app.database import init_db, SessionLocal
 from app.models.user import User
 from app.models.product import Product
 from app.utils.security import hash_password
@@ -100,11 +96,12 @@ app.include_router(chat.router, tags=["Chat"])
 
 # ── User list endpoint (admin only) ──
 @app.get("/api/admin/users", tags=["Admin"])
-def admin_list_users(
-    db: Session = Depends(get_db),
-    _admin: User = Depends(get_current_admin_user),
-):
-    users = db.execute(
-        select(User).order_by(User.id.asc())
-    ).scalars().all()
-    return [{"id": u.id, "username": u.username, "role": u.role, "ticket_balance": u.ticket_balance} for u in users]
+def admin_list_users():
+    db = SessionLocal()
+    try:
+        users = db.execute(
+            select(User).order_by(User.id.asc())
+        ).scalars().all()
+        return [{"id": u.id, "username": u.username, "role": u.role, "ticket_balance": u.ticket_balance} for u in users]
+    finally:
+        db.close()
