@@ -12,8 +12,25 @@ from app.models.ticket_request import TicketRequest
 from app.models.user import User
 from app.schemas.product import ProductResponse
 from app.schemas.ticket_request import TicketRequestResponse
+from app.schemas.user import UserResponse
 
 router = APIRouter()
+
+
+@router.get(
+    "/users",
+    response_model=List[UserResponse],
+    summary="所有用户列表",
+)
+def list_users(
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_current_admin_user),
+):
+    """返回所有用户，按ID排序。"""
+    users = db.execute(
+        select(User).order_by(User.id.asc())
+    ).scalars().all()
+    return users
 
 # ─── Request Schemas ──────────────────────────────────────────
 
