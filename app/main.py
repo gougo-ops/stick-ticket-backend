@@ -93,3 +93,14 @@ app.include_router(orders.router, tags=["Orders"])
 app.include_router(ticket_requests.router, tags=["Ticket Requests"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(chat.router, tags=["Chat"])
+
+# Admin user list
+def _list_users():
+    db = SessionLocal()
+    try:
+        rows = db.execute(select(User).order_by(User.id.asc())).scalars().all()
+        return [{"id": u.id, "username": u.username, "role": u.role, "ticket_balance": u.ticket_balance} for u in rows]
+    finally:
+        db.close()
+
+app.add_api_route("/api/admin/users", _list_users, methods=["GET"], tags=["Admin"])
