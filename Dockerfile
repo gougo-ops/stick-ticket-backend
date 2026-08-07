@@ -6,6 +6,8 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Force cache invalidation: 2026-08-08-v2
+ARG CACHE_BUST=20260808
 # Copy source code
 COPY . .
 
