@@ -1,5 +1,6 @@
+import sys
 from contextlib import asynccontextmanager
-from sqlalchemy import select, func
+from sqlalchemy import select, func, text
 
 from pathlib import Path
 
@@ -7,7 +8,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.database import init_db, SessionLocal
+from app.database import init_db, SessionLocal, engine
+from app.config import settings, IS_PRODUCTION
 from app.models.user import User
 from app.models.product import Product
 from app.utils.security import hash_password
@@ -25,21 +27,43 @@ from app.routers import (
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup: create tables and seed initial data if empty."""
+    # ── 数据库类型提示 ────────────────────────────────────
+    db_kind = "SQLite" if settings.DATABASE_URL.startswith("sqlite") else "PostgreSQL"
+    if IS_PRODUCTION and db_kind == "SQLite":
+        print(
+            "⚠️  [WARN] 生产环境使用 SQLite — 数据不会持久化！\n"
+            "    请在 Railway Dashboard 添加 PostgreSQL 数据库插件。",
+            file=sys.stderr,
+        )
+    print(f"[INFO] 数据库类型: {db_kind}")
+    print(f"[INFO] DATABASE_URL 前缀: {settings.DATABASE_URL[:30]}...")
+
     init_db()
+
+    # 验证数据库连接
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        print("[OK] 数据库连接验证通过")
+    except Exception as e:
+        print(f"[FATAL] 数据库连接失败: {e}", file=sys.stderr)
+        raise
 
     # Auto-seed: create admin + sample products if DB is empty
     db = SessionLocal()
     try:
+        user_count = db.execute(select(func.count()).select_from(User)).scalar()
         product_count = db.execute(select(func.count()).select_from(Product)).scalar()
         if product_count == 0:
-            # Create admin user
-            admin = User(
-                username="admin",
-                password_hash=hash_password("admin123"),
-                role="admin",
-                ticket_balance=99999,
-            )
-            db.add(admin)
+            # Create admin user (only if no users exist)
+            if user_count == 0:
+                admin = User(
+                    username="admin",
+                    password_hash=hash_password("admin123"),
+                    role="admin",
+                    ticket_balance=99999,
+                )
+                db.add(admin)
 
             # Create sample products
             sample_products = [
@@ -54,6 +78,8 @@ async def lifespan(app: FastAPI):
 
             db.commit()
             print("[OK] Auto-seeded admin + 5 products")
+        else:
+            print(f"[INFO] 数据库已有 {user_count} 位用户, {product_count} 件商品 — 跳过初始化")
     except Exception as e:
         db.rollback()
         print(f"[WARN] Seed skipped: {e}")
