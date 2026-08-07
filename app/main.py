@@ -141,3 +141,26 @@ def _list_users():
         db.close()
 
 app.add_api_route("/api/admin/users", _list_users, methods=["GET"], tags=["Admin"])
+
+# ── 诊断端点 ──────────────────────────────────────────────
+@app.get("/api/diagnose")
+def diagnose():
+    """返回数据库诊断信息，帮助排查问题"""
+    db = SessionLocal()
+    try:
+        user_count = db.execute(select(func.count()).select_from(User)).scalar()
+        product_count = db.execute(select(func.count()).select_from(Product)).scalar()
+        users = db.execute(select(User).order_by(User.id.asc())).scalars().all()
+        return {
+            "database_type": "PostgreSQL" if not settings.DATABASE_URL.startswith("sqlite") else "SQLite",
+            "database_url_prefix": settings.DATABASE_URL[:40] + "...",
+            "is_production": IS_PRODUCTION,
+            "user_count": user_count,
+            "product_count": product_count,
+            "users": [
+                {"id": u.id, "username": u.username, "role": u.role}
+                for u in users
+            ],
+        }
+    finally:
+        db.close()
